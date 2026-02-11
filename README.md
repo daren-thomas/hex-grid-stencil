@@ -3,9 +3,9 @@
 This project contains a Python script that generates a printable hex-grid drawing aid for TTRPG maps.
 
 - Common terms: **stencil** and **template** are both used for this kind of tool.
-- For your use case, **template** is slightly more precise because it is meant to guide pen lines repeatedly on paper.
+- For this use case, **template** is slightly more precise because it is meant to guide pen lines repeatedly on paper.
 
-The generated layout follows the style in your reference image:
+The generated layout follows the style in the reference image:
 - short line dashes centered on each hex edge
 - small 3-way “Y” junctions at each hex vertex
 
@@ -18,49 +18,76 @@ Defaults are chosen for a **Bambu Lab A1 mini** (PLA, FDM):
 
 ## Files
 
-- `hex_grid_template.py` – generator script
+- `hex_grid_template.py` – STL generator script
+- `render_stl_preview.py` – STL-to-SVG preview renderer
+- `scripts/run_local.sh` – convenience script to run the full local workflow
 - `hex_grid_template_1in_a1mini.stl` – generated model
 
-## Backend
+## Recommended local setup (best option): `uv`
 
-The script uses **build123d** to create a rectangular solid plate and subtract dashed/Y cut-through slots so the final model is mostly solid with pen holes.
+For this repo, **`uv` + project-managed `.venv`** is the best default:
 
-## Requirements
+- fast, reproducible dependency installs
+- isolated environment per repo
+- one-command execution via `uv run`
+- no Docker overhead for a small local CAD script
 
-- Python 3.10+
-- `build123d` (required for the subtractive solid-plate version)
+### 1) Install uv
 
-Example install:
+See the official install methods: <https://docs.astral.sh/uv/getting-started/installation/>.
+
+### 2) Sync dependencies
 
 ```bash
+uv sync
+```
+
+This reads `pyproject.toml` and creates/updates `.venv` with `build123d`.
+
+### 3) Generate STL
+
+```bash
+uv run python hex_grid_template.py
+```
+
+### 4) Render preview SVG
+
+```bash
+uv run python render_stl_preview.py
+```
+
+### 5) (Optional) Run the full workflow script
+
+```bash
+./scripts/run_local.sh
+```
+
+## Why not Docker as default?
+
+Docker can work, but it's not the simplest first choice here because:
+
+- this project is a local CLI script (not a long-running service)
+- iterating geometry parameters is usually faster directly in a local venv
+- mounting files and handling UID/path quirks adds extra friction
+
+If you want strict host isolation or CI-style reproducibility, Docker can be added later.
+
+## Alternative: plain `venv` + `pip`
+
+If you prefer standard Python tooling:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -U pip
 pip install build123d
-```
-
-## Generate STL
-
-```bash
 python hex_grid_template.py
-```
-
-This writes:
-
-- `hex_grid_template_1in_a1mini.stl`
-
-The script prints which backend was used.
-
-## Render STL preview image
-
-To create an SVG preview suitable for the README:
-
-```bash
 python render_stl_preview.py
 ```
 
-This writes:
+## Backend
 
-- `assets/hex_grid_template_preview.svg`
-
-No third-party packages are required; the renderer only uses the Python standard library.
+The generator uses **build123d** to create a rectangular solid plate and subtract dashed/Y cut-through slots so the final model is mostly solid with pen holes.
 
 ## Model preview
 
