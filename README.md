@@ -55,6 +55,24 @@ This writes:
 
 The script prints which backend was used.
 
+## Render STL preview image
+
+To create an SVG preview suitable for the README:
+
+```bash
+python render_stl_preview.py
+```
+
+This writes:
+
+- `assets/hex_grid_template_preview.svg`
+
+No third-party packages are required; the renderer only uses the Python standard library.
+
+## Model preview
+
+![Hex grid template STL preview](assets/hex_grid_template_preview.svg)
+
 ## Tuning parameters
 
 Edit `StencilConfig` in `hex_grid_template.py`:
