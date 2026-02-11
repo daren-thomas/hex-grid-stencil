@@ -1,0 +1,11 @@
+[project]
+name = "hex-grid-stencil"
+version = "0.1.0"
+description = "Generate a printable hex-grid drawing stencil STL"
+requires-python = ">=3.10"
+dependencies = [
+  "build123d>=0.8",
+]
+
+[tool.uv]
+dev-dependencies = []
