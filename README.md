@@ -21,21 +21,14 @@ Defaults are chosen for a **Bambu Lab A1 mini** (PLA, FDM):
 - `hex_grid_template.py` – generator script
 - `hex_grid_template_1in_a1mini.stl` – generated model
 
-## Backends
+## Backend
 
-The script supports two output backends:
-
-1. **build123d backend (preferred):**
-   - Creates a rectangular plate and subtracts dashed/Y cut-through slots.
-2. **Fallback STL backend (automatic when build123d is unavailable):**
-   - Emits a printable line-template lattice directly as an STL mesh.
-
-This keeps generation working in restricted environments while preserving the 1-inch hex layout style.
+The script uses **build123d** to create a rectangular solid plate and subtract dashed/Y cut-through slots so the final model is mostly solid with pen holes.
 
 ## Requirements
 
 - Python 3.10+
-- Optional: `build123d` (for the preferred subtractive plate version)
+- `build123d` (required for the subtractive solid-plate version)
 
 Example install:
 

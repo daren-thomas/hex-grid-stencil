@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 """Hex-grid drawing template generator.
 
-Primary backend: build123d (plate with subtractive slots).
-Fallback backend (no build123d installed): pure-Python STL writer that emits a
-line-template lattice using the same hex geometry.
+This generator intentionally requires build123d so the output is a *solid
+plate* with subtractive through-slots (line/corner holes).
 """
 
 from __future__ import annotations
@@ -54,7 +53,6 @@ Segment = tuple[float, float, float, float]  # cx, cy, length, angle_deg
 
 class Backend(Enum):
     BUILD123D = "build123d"
-    FALLBACK_STL = "fallback_stl"
 
 
 def _round_point(point: Point, precision: int) -> Point:
@@ -164,89 +162,19 @@ def build_hex_grid_template(config: StencilConfig):
     return stencil.part
 
 
-def _normal(a: tuple[float, float, float], b: tuple[float, float, float], c: tuple[float, float, float]):
-    ux, uy, uz = b[0] - a[0], b[1] - a[1], b[2] - a[2]
-    vx, vy, vz = c[0] - a[0], c[1] - a[1], c[2] - a[2]
-    nx = uy * vz - uz * vy
-    ny = uz * vx - ux * vz
-    nz = ux * vy - uy * vx
-    mag = math.sqrt(nx * nx + ny * ny + nz * nz)
-    if mag == 0:
-        return (0.0, 0.0, 0.0)
-    return (nx / mag, ny / mag, nz / mag)
-
-
-def _box_triangles(cx: float, cy: float, length: float, width: float, height: float, angle_deg: float):
-    hl, hw, hh = 0.5 * length, 0.5 * width, 0.5 * height
-    angle = math.radians(angle_deg)
-    cos_a, sin_a = math.cos(angle), math.sin(angle)
-
-    local = [
-        (-hl, -hw, -hh),
-        (hl, -hw, -hh),
-        (hl, hw, -hh),
-        (-hl, hw, -hh),
-        (-hl, -hw, hh),
-        (hl, -hw, hh),
-        (hl, hw, hh),
-        (-hl, hw, hh),
-    ]
-
-    verts = []
-    for x, y, z in local:
-        rx = x * cos_a - y * sin_a + cx
-        ry = x * sin_a + y * cos_a + cy
-        verts.append((rx, ry, z + hh))
-
-    faces = [
-        (0, 1, 2), (0, 2, 3),
-        (4, 6, 5), (4, 7, 6),
-        (0, 4, 5), (0, 5, 1),
-        (1, 5, 6), (1, 6, 2),
-        (2, 6, 7), (2, 7, 3),
-        (3, 7, 4), (3, 4, 0),
-    ]
-
-    return [(verts[i], verts[j], verts[k]) for i, j, k in faces]
-
-
-def _write_ascii_stl(path: str, triangles):
-    with open(path, "w", encoding="utf-8") as f:
-        f.write("solid hex_grid_template\n")
-        for a, b, c in triangles:
-            nx, ny, nz = _normal(a, b, c)
-            f.write(f"  facet normal {nx:.8e} {ny:.8e} {nz:.8e}\n")
-            f.write("    outer loop\n")
-            f.write(f"      vertex {a[0]:.8e} {a[1]:.8e} {a[2]:.8e}\n")
-            f.write(f"      vertex {b[0]:.8e} {b[1]:.8e} {b[2]:.8e}\n")
-            f.write(f"      vertex {c[0]:.8e} {c[1]:.8e} {c[2]:.8e}\n")
-            f.write("    endloop\n")
-            f.write("  endfacet\n")
-        f.write("endsolid hex_grid_template\n")
-
-
-def build_fallback_stl(config: StencilConfig, path: str) -> None:
-    """No build123d path: emit a line-template lattice STL from cuboid segments."""
-    edge_segments, vertex_segments = _collect_grid_geometry(config)
-
-    triangles = []
-    for cx, cy, length, angle in edge_segments + vertex_segments:
-        triangles.extend(_box_triangles(cx, cy, length, config.slot_width, config.thickness, angle))
-
-    _write_ascii_stl(path, triangles)
-
-
 def main() -> None:
     config = StencilConfig()
     output = "hex_grid_template_1in_a1mini.stl"
 
-    if HAS_BUILD123D:
-        part = build_hex_grid_template(config)
-        export_stl(part, output)
-        backend = Backend.BUILD123D
-    else:
-        build_fallback_stl(config, output)
-        backend = Backend.FALLBACK_STL
+    if not HAS_BUILD123D:
+        raise SystemExit(
+            "build123d is required to generate the solid stencil-with-holes model. "
+            "Install it with: pip install build123d"
+        )
+
+    part = build_hex_grid_template(config)
+    export_stl(part, output)
+    backend = Backend.BUILD123D
 
     print(f"Wrote {output} using backend={backend.value}")
 
