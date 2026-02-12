@@ -12,10 +12,10 @@ from dataclasses import dataclass
 from enum import Enum
 
 try:
-    from build123d import Box, BuildPart, Locations, Mode, Rot, export_stl
+    from build123d import Box, BuildPart, Locations, Mode, Pos, Rot, export_stl
 
     HAS_BUILD123D = True
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     HAS_BUILD123D = False
 
 
@@ -150,14 +150,12 @@ def build_hex_grid_template(config: StencilConfig):
         Box(config.width, config.height, config.thickness)
 
         for cx, cy, length, angle in edge_segments:
-            with Rot(0, 0, angle):
-                with Locations((cx, cy, 0)):
-                    Box(length, config.slot_width, cut_depth, mode=Mode.SUBTRACT)
+            with Locations(Pos(cx, cy, 0) * Rot(0, 0, angle)):
+                Box(length, config.slot_width, cut_depth, mode=Mode.SUBTRACT)
 
         for cx, cy, length, angle in vertex_segments:
-            with Rot(0, 0, angle):
-                with Locations((cx, cy, 0)):
-                    Box(length, config.slot_width, cut_depth, mode=Mode.SUBTRACT)
+            with Locations(Pos(cx, cy, 0) * Rot(0, 0, angle)):
+                Box(length, config.slot_width, cut_depth, mode=Mode.SUBTRACT)
 
     return stencil.part
 

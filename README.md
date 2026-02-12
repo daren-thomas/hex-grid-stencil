@@ -46,9 +46,23 @@ This reads `pyproject.toml` and creates/updates `.venv` with `build123d`.
 
 ### 3) Generate STL
 
+If you are using the uv-managed virtual environment, run:
+
 ```bash
 uv run python hex_grid_template.py
 ```
+
+If dependencies are already installed in your active Python environment,
+this direct command works too:
+
+```bash
+python hex_grid_template.py
+```
+
+> Note: Recent `build123d` releases (including `0.10.x`) require the current
+> location/rotation API used by this script. If you previously saw a
+> `Rotation object does not support the context manager protocol` error,
+> pull the latest code in this repo and rerun the command above.
 
 ### 4) Render preview SVG
 
