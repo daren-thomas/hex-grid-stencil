@@ -114,8 +114,8 @@ def render_svg(
     output_path: Path,
     width: int = 1400,
     height: int = 900,
-    yaw_deg: float = -42,
-    pitch_deg: float = -62,
+    yaw_deg: float = -36,
+    pitch_deg: float = -58,
 ) -> None:
     rotated: list[tuple[tuple[Vec3, Vec3, Vec3], float, str]] = []
 
